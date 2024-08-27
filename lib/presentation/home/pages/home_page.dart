@@ -5,6 +5,8 @@ import 'package:pos_gmedia_test/core/constant/colors.dart';
 import '../../auth/bloc/logout/logout_bloc.dart';
 import '../../auth/pages/login_page.dart';
 import '../bloc/get_category/get_category_bloc.dart';
+import '../bloc/get_product/get_product_bloc.dart';
+import '../../../../data/datasources/product_remote_datasource.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -20,29 +22,6 @@ class _HomePageState extends State<HomePage> {
     // Memicu pengambilan data kategori saat halaman diinisialisasi
     context.read<GetCategoryBloc>().add(GetCategoryEvent.getCategory());
   }
-
-  final productsDummy = [
-    {
-      'name': 'Product Name 1',
-      'price': 10000,
-      'imageUrl': 'https://via.placeholder.com/150'
-    },
-    {
-      'name': 'Product Name 2',
-      'price': 15000,
-      'imageUrl': 'https://via.placeholder.com/150'
-    },
-    {
-      'name': 'Product Name 3',
-      'price': 20000,
-      'imageUrl': 'https://via.placeholder.com/150'
-    },
-    {
-      'name': 'Product Name 4',
-      'price': 25000,
-      'imageUrl': 'https://via.placeholder.com/150'
-    },
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -129,111 +108,210 @@ class _HomePageState extends State<HomePage> {
                   itemCount: categoryResponseModel.data?.length ?? 0,
                   itemBuilder: (context, index) {
                     final category = categoryResponseModel.data![index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            category.name ?? 'Category',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 16.0,
-                              crossAxisSpacing: 16.0,
-                              childAspectRatio: 0.7,
-                            ),
-                            itemCount: productsDummy.length,
-                            itemBuilder: (context, productIndex) {
-                              final product = productsDummy[productIndex];
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.2),
-                                      spreadRadius: 1,
-                                      blurRadius: 7,
-                                      offset: Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
+                    return BlocProvider(
+                      create: (context) =>
+                          GetProductBloc(ProductRemoteDataSource())
+                            ..add(GetProductEvent.getProductsByCategory(
+                                category.id!)),
+                      child: BlocBuilder<GetProductBloc, GetProductState>(
+                        builder: (context, productState) {
+                          return productState.when(
+                            initial: () => Container(),
+                            loading: () => const CircularProgressIndicator(),
+                            success: (productResponseModel) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(
-                                          product['imageUrl'] as String,
-                                          fit: BoxFit.cover,
-                                          width: double.infinity,
-                                        ),
+                                    Text(
+                                      category.name ?? 'Category',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            product['name'] as String,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Rp. ${(product['price'] as int).toStringAsFixed(0)}',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                  // Implement Add to Cart functionality
-                                                },
-                                                child: Text('+ Add to Cart'),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.blue,
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              3,
+                                      child: ListView.builder(
+                                        scrollDirection: Axis.horizontal,
+                                        itemCount:
+                                            productResponseModel.data?.length ??
+                                                0,
+                                        itemBuilder: (context, productIndex) {
+                                          final product = productResponseModel
+                                              .data![productIndex];
+                                          return Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                2,
+                                            margin: const EdgeInsets.only(
+                                              right: 16.0,
+                                              bottom: 10.0,
+                                            ), // Add bottom margin
+                                            decoration: BoxDecoration(
+                                              color: AppColors.background,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.3),
+                                                  spreadRadius: 3,
+                                                  blurRadius: 7,
+                                                  offset: const Offset(1,
+                                                      2), // changes position of shadow
                                                 ),
-                                              ),
-                                              IconButton(
-                                                icon: Icon(Icons.delete,
-                                                    color: Colors.red),
-                                                onPressed: () {
-                                                  // Implement delete functionality
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                              ],
+                                            ),
+
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Expanded(
+                                                  child: ClipRRect(
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                            topLeft: Radius
+                                                                .circular(10),
+                                                            topRight:
+                                                                Radius.circular(
+                                                                    10)),
+                                                    child: Image.network(
+                                                      product.pictureUrl ?? '',
+                                                      fit: BoxFit.cover,
+                                                      width: double.infinity,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            product.name ??
+                                                                'Product',
+                                                            style: TextStyle(
+                                                              fontSize: 16,
+                                                            ),
+                                                          ),
+                                                          GestureDetector(
+                                                            onTap: () {},
+                                                            child: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          4),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: AppColors
+                                                                    .error,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5),
+                                                              ),
+                                                              child: Text(
+                                                                'Delete',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        10,
+                                                                    color: AppColors
+                                                                        .background,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      const SizedBox(height: 5),
+                                                      Text(
+                                                        'Rp. ${product.price?.toStringAsFixed(0) ?? '0'}',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      const SizedBox(
+                                                          height: 28),
+                                                      Center(
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  bottom: 15.0),
+                                                          child:
+                                                              GestureDetector(
+                                                            onTap: () {},
+                                                            child: Container(
+                                                              padding: EdgeInsets.symmetric(
+                                                                  horizontal: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width /
+                                                                      9.1,
+                                                                  vertical: 6),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: AppColors
+                                                                    .primary,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5),
+                                                              ),
+                                                              child: Text(
+                                                                '+ Add to Cart',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    color: AppColors
+                                                                        .background,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ],
                                 ),
                               );
                             },
-                          ),
-                        ],
+                            error: (message) =>
+                                Center(child: Text('Error: $message')),
+                          );
+                        },
                       ),
                     );
                   },

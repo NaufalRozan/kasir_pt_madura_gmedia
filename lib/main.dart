@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pos_gmedia_test/data/datasources/product_remote_datasource.dart';
 import 'package:pos_gmedia_test/presentation/auth/pages/login_page.dart';
 import 'package:pos_gmedia_test/presentation/home/pages/home_page.dart';
 
@@ -10,6 +11,7 @@ import 'data/datasources/category_remote_datasource.dart';
 import 'presentation/auth/bloc/login/login_bloc.dart';
 import 'presentation/auth/bloc/logout/logout_bloc.dart';
 import 'presentation/home/bloc/get_category/get_category_bloc.dart';
+import 'presentation/home/bloc/get_product/get_product_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +39,11 @@ class MyApp extends StatelessWidget {
           create: (context) => LogoutBloc(AuthRemoteDatasource()),
         ),
         BlocProvider(
-            create: (context) => GetCategoryBloc(CategoryRemoteDataSource())),
+          create: (context) => GetCategoryBloc(CategoryRemoteDataSource()),
+        ),
+        BlocProvider(
+          create: (context) => GetProductBloc(ProductRemoteDataSource()),
+        ),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
