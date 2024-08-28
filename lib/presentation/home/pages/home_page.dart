@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:pos_gmedia_test/core/constant/colors.dart';
 
 import '../../../core/components/add_category_form.dart';
@@ -21,6 +22,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final formatCurrency =
+      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp. ', decimalDigits: 0);
   String? selectedCategoryId;
 
   @override
@@ -284,8 +287,15 @@ class _HomePageState extends State<HomePage> {
                                                                 .spaceBetween,
                                                         children: [
                                                           Text(
-                                                            product.name ??
-                                                                'Product',
+                                                            product.name !=
+                                                                        null &&
+                                                                    product.name!
+                                                                            .length >
+                                                                        10
+                                                                ? '${product.name?.substring(0, 10)}...'
+                                                                : product
+                                                                        .name ??
+                                                                    'Product',
                                                             style: TextStyle(
                                                               fontSize: 16,
                                                             ),
@@ -326,7 +336,7 @@ class _HomePageState extends State<HomePage> {
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Text(
-                                                        'Rp. ${product.price?.toStringAsFixed(0) ?? '0'}',
+                                                        '${formatCurrency.format(product.price ?? 0)}',
                                                         style: TextStyle(
                                                           fontSize: 18,
                                                           fontWeight:
