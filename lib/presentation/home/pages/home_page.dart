@@ -97,7 +97,6 @@ class _HomePageState extends State<HomePage> {
                   leading: const Icon(Icons.add_box_rounded),
                   title: const Text('Add Product'),
                   onTap: () {
-                    // Make sure to select a category first, or handle no category selected
                     if (selectedCategoryId != null) {
                       Navigator.of(context).pop(); // Close the drawer first
                       _showAddProductModal(context,
@@ -206,238 +205,273 @@ class _HomePageState extends State<HomePage> {
                             initial: () => Container(),
                             loading: () => const CircularProgressIndicator(),
                             success: (productResponseModel) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      category.name ?? 'Category',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                              return BlocListener<DeleteProductBloc,
+                                  DeleteProductState>(
+                                listener: (context, deleteState) {
+                                  deleteState.whenOrNull(
+                                    success: (message) {
+                                      // Ambil ulang produk setelah penghapusan berhasil
+                                      context.read<GetProductBloc>().add(
+                                          GetProductEvent.getProductsByCategory(
+                                              category.id!));
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Product deleted successfully'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    },
+                                    error: (error) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(error),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        category.name ?? 'Category',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height /
-                                              3,
-                                      child: ListView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount:
-                                            productResponseModel.data?.length ??
-                                                0,
-                                        itemBuilder: (context, productIndex) {
-                                          final product = productResponseModel
-                                              .data![productIndex];
-                                          return Container(
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width /
-                                                2,
-                                            margin: const EdgeInsets.only(
-                                              right: 16.0,
-                                              bottom: 10.0,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.background,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.3),
-                                                  spreadRadius: 3,
-                                                  blurRadius: 7,
-                                                  offset: const Offset(1, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Expanded(
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                      topLeft:
-                                                          Radius.circular(10),
-                                                      topRight:
-                                                          Radius.circular(10),
-                                                    ),
-                                                    child: Image.network(
-                                                      product.pictureUrl ?? '',
-                                                      fit: BoxFit.cover,
-                                                      width: double.infinity,
+                                      const SizedBox(height: 8),
+                                      SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height /
+                                                3,
+                                        child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: productResponseModel
+                                                  .data?.length ??
+                                              0,
+                                          itemBuilder: (context, productIndex) {
+                                            final product = productResponseModel
+                                                .data![productIndex];
+                                            return Container(
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  2,
+                                              margin: const EdgeInsets.only(
+                                                right: 16.0,
+                                                bottom: 10.0,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.background,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.3),
+                                                    spreadRadius: 3,
+                                                    blurRadius: 7,
+                                                    offset: const Offset(1, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Expanded(
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(10),
+                                                        topRight:
+                                                            Radius.circular(10),
+                                                      ),
+                                                      child: Image.network(
+                                                        product.pictureUrl ??
+                                                            '',
+                                                        fit: BoxFit.cover,
+                                                        width: double.infinity,
+                                                      ),
                                                     ),
                                                   ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            product.name !=
-                                                                        null &&
-                                                                    product.name!
-                                                                            .length >
-                                                                        10
-                                                                ? '${product.name?.substring(0, 10)}...'
-                                                                : product
-                                                                        .name ??
-                                                                    'Product',
-                                                            style: TextStyle(
-                                                              fontSize: 16,
-                                                            ),
-                                                          ),
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              // Konfirmasi penghapusan
-                                                              showDialog(
-                                                                context:
-                                                                    context,
-                                                                builder:
-                                                                    (context) =>
-                                                                        AlertDialog(
-                                                                  title: Text(
-                                                                      'Delete Product'),
-                                                                  content: Text(
-                                                                      'Are you sure you want to delete this product?'),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () =>
-                                                                              Navigator.of(context).pop(),
-                                                                      child: Text(
-                                                                          'Cancel'),
-                                                                    ),
-                                                                    TextButton(
-                                                                      onPressed:
-                                                                          () {
-                                                                        context
-                                                                            .read<DeleteProductBloc>()
-                                                                            .add(
-                                                                              DeleteProductEvent.deleteProduct(productId: product.id!),
-                                                                            );
-                                                                        Navigator.of(context)
-                                                                            .pop(); // Tutup dialog
-                                                                      },
-                                                                      child: Text(
-                                                                          'Delete'),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            },
-                                                            child: Container(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          8,
-                                                                      vertical:
-                                                                          4),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color:
-                                                                    Colors.red,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            5),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          children: [
+                                                            Text(
+                                                              product.name !=
+                                                                          null &&
+                                                                      product.name!
+                                                                              .length >
+                                                                          10
+                                                                  ? '${product.name?.substring(0, 10)}...'
+                                                                  : product
+                                                                          .name ??
+                                                                      'Product',
+                                                              style: TextStyle(
+                                                                fontSize: 16,
                                                               ),
-                                                              child: Text(
-                                                                'Delete',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 10,
+                                                            ),
+                                                            GestureDetector(
+                                                              onTap: () {
+                                                                showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder:
+                                                                      (context) =>
+                                                                          AlertDialog(
+                                                                    title: Text(
+                                                                        'Delete Product'),
+                                                                    content: Text(
+                                                                        'Are you sure you want to delete this product?'),
+                                                                    actions: [
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () =>
+                                                                                Navigator.of(context).pop(),
+                                                                        child: Text(
+                                                                            'Cancel'),
+                                                                      ),
+                                                                      TextButton(
+                                                                        onPressed:
+                                                                            () {
+                                                                          context
+                                                                              .read<DeleteProductBloc>()
+                                                                              .add(
+                                                                                DeleteProductEvent.deleteProduct(productId: product.id!),
+                                                                              );
+                                                                          Navigator.of(context)
+                                                                              .pop(); // Tutup dialog
+                                                                        },
+                                                                        child: Text(
+                                                                            'Delete'),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              },
+                                                              child: Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        4),
+                                                                decoration:
+                                                                    BoxDecoration(
                                                                   color: Colors
-                                                                      .white,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
+                                                                      .red,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              5),
+                                                                ),
+                                                                child: Text(
+                                                                  'Delete',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        10,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(height: 5),
-                                                      Text(
-                                                        '${formatCurrency.format(product.price ?? 0)}',
-                                                        style: TextStyle(
-                                                          fontSize: 18,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          ],
                                                         ),
-                                                      ),
-                                                      const SizedBox(
-                                                          height: 28),
-                                                      Center(
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  bottom: 15.0),
-                                                          child:
-                                                              GestureDetector(
-                                                            onTap: () {},
-                                                            child: Container(
-                                                              padding: EdgeInsets
-                                                                  .symmetric(
-                                                                horizontal: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width /
-                                                                    9.1,
-                                                                vertical: 6,
-                                                              ),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: AppColors
-                                                                    .primary,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            5),
-                                                              ),
-                                                              child: Text(
-                                                                '+ Add to Cart',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 14,
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          '${formatCurrency.format(product.price ?? 0)}',
+                                                          style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 28),
+                                                        Center(
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    bottom:
+                                                                        15.0),
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () {},
+                                                              child: Container(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                  horizontal: MediaQuery.of(
+                                                                              context)
+                                                                          .size
+                                                                          .width /
+                                                                      9.1,
+                                                                  vertical: 6,
+                                                                ),
+                                                                decoration:
+                                                                    BoxDecoration(
                                                                   color: AppColors
-                                                                      .background,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
+                                                                      .primary,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              5),
+                                                                ),
+                                                                child: Text(
+                                                                  '+ Add to Cart',
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    color: AppColors
+                                                                        .background,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             },
