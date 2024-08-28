@@ -10,6 +10,7 @@ import 'data/datasources/auth_remote_datasource.dart';
 import 'data/datasources/category_remote_datasource.dart';
 import 'presentation/auth/bloc/login/login_bloc.dart';
 import 'presentation/auth/bloc/logout/logout_bloc.dart';
+import 'presentation/home/bloc/delete_product/delete_product_bloc.dart';
 import 'presentation/home/bloc/get_category/get_category_bloc.dart';
 import 'presentation/home/bloc/get_product/get_product_bloc.dart';
 
@@ -43,6 +44,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => GetProductBloc(ProductRemoteDataSource()),
+        ),
+        BlocProvider(
+          create: (context) => DeleteProductBloc(ProductRemoteDataSource()),
         ),
       ],
       child: MaterialApp(

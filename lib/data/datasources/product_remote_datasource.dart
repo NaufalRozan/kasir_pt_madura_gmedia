@@ -70,4 +70,25 @@ class ProductRemoteDataSource {
       return left('Error: $e');
     }
   }
+
+  Future<Either<String, String>> deleteProduct(String productId) async {
+    final authData = await AuthLocalDatasource().getAuthData();
+    final url = Uri.parse('${Variables.baseUrl}/api/v1/product/$productId');
+    final header = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer ${authData?.data?.token}',
+    };
+
+    try {
+      final response = await http.delete(url, headers: header);
+      if (response.statusCode == 200) {
+        return right('Product deleted successfully');
+      } else {
+        return left('Failed to delete product: ${response.body}');
+      }
+    } catch (e) {
+      return left('Error: $e');
+    }
+  }
 }

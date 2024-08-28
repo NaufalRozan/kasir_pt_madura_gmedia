@@ -7,6 +7,7 @@ import '../../../core/components/add_category_form.dart';
 import '../../../core/components/add_product_form.dart';
 import '../../auth/bloc/logout/logout_bloc.dart';
 import '../../auth/pages/login_page.dart';
+import '../bloc/delete_product/delete_product_bloc.dart';
 import '../bloc/get_category/get_category_bloc.dart';
 import '../bloc/get_product/get_product_bloc.dart';
 import '../../../../data/datasources/product_remote_datasource.dart';
@@ -301,18 +302,56 @@ class _HomePageState extends State<HomePage> {
                                                             ),
                                                           ),
                                                           GestureDetector(
-                                                            onTap: () {},
+                                                            onTap: () {
+                                                              // Konfirmasi penghapusan
+                                                              showDialog(
+                                                                context:
+                                                                    context,
+                                                                builder:
+                                                                    (context) =>
+                                                                        AlertDialog(
+                                                                  title: Text(
+                                                                      'Delete Product'),
+                                                                  content: Text(
+                                                                      'Are you sure you want to delete this product?'),
+                                                                  actions: [
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          () =>
+                                                                              Navigator.of(context).pop(),
+                                                                      child: Text(
+                                                                          'Cancel'),
+                                                                    ),
+                                                                    TextButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                        context
+                                                                            .read<DeleteProductBloc>()
+                                                                            .add(
+                                                                              DeleteProductEvent.deleteProduct(productId: product.id!),
+                                                                            );
+                                                                        Navigator.of(context)
+                                                                            .pop(); // Tutup dialog
+                                                                      },
+                                                                      child: Text(
+                                                                          'Delete'),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              );
+                                                            },
                                                             child: Container(
                                                               padding:
                                                                   const EdgeInsets
                                                                       .symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 4,
-                                                              ),
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          4),
                                                               decoration:
                                                                   BoxDecoration(
-                                                                color: AppColors
-                                                                    .error,
+                                                                color:
+                                                                    Colors.red,
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
@@ -323,8 +362,8 @@ class _HomePageState extends State<HomePage> {
                                                                 style:
                                                                     TextStyle(
                                                                   fontSize: 10,
-                                                                  color: AppColors
-                                                                      .background,
+                                                                  color: Colors
+                                                                      .white,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
