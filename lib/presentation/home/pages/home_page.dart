@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pos_gmedia_test/core/constant/colors.dart';
 
 import '../../../core/components/add_category_form.dart';
+import '../../../core/components/add_product_form.dart';
 import '../../auth/bloc/logout/logout_bloc.dart';
 import '../../auth/pages/login_page.dart';
 import '../bloc/get_category/get_category_bloc.dart';
 import '../bloc/get_product/get_product_bloc.dart';
 import '../../../../data/datasources/product_remote_datasource.dart';
 import '../bloc/add_category/add_category_bloc.dart';
+import '../bloc/add_product/add_product_bloc.dart';
 import '../../../../data/datasources/category_remote_datasource.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,6 +21,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? selectedCategoryId;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +50,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showAddProductModal(BuildContext context, {String? categoryId}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: BlocProvider(
+            create: (context) => AddProductBloc(ProductRemoteDataSource()),
+            child: AddProductForm(categoryId: categoryId!),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,6 +87,25 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     Navigator.of(context).pop(); // Close the drawer first
                     _showAddCategoryModal(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.add_box_rounded),
+                  title: const Text('Add Product'),
+                  onTap: () {
+                    // Make sure to select a category first, or handle no category selected
+                    if (selectedCategoryId != null) {
+                      Navigator.of(context).pop(); // Close the drawer first
+                      _showAddProductModal(context,
+                          categoryId: selectedCategoryId);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please select a category first'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                 ),
                 const Spacer(),
@@ -138,6 +182,11 @@ class _HomePageState extends State<HomePage> {
               initial: () => const Center(child: Text('No categories loaded')),
               loading: () => const Center(child: CircularProgressIndicator()),
               success: (categoryResponseModel) {
+                if (selectedCategoryId == null &&
+                    categoryResponseModel.data!.isNotEmpty) {
+                  selectedCategoryId = categoryResponseModel
+                      .data!.first.id; // Select the first category by default
+                }
                 return ListView.builder(
                   itemCount: categoryResponseModel.data?.length ?? 0,
                   itemBuilder: (context, index) {
@@ -186,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                                             margin: const EdgeInsets.only(
                                               right: 16.0,
                                               bottom: 10.0,
-                                            ), // Add bottom margin
+                                            ),
                                             decoration: BoxDecoration(
                                               color: AppColors.background,
                                               borderRadius:
@@ -197,12 +246,10 @@ class _HomePageState extends State<HomePage> {
                                                       .withOpacity(0.3),
                                                   spreadRadius: 3,
                                                   blurRadius: 7,
-                                                  offset: const Offset(1,
-                                                      2), // changes position of shadow
+                                                  offset: const Offset(1, 2),
                                                 ),
                                               ],
                                             ),
-
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
@@ -211,11 +258,11 @@ class _HomePageState extends State<HomePage> {
                                                   child: ClipRRect(
                                                     borderRadius:
                                                         BorderRadius.only(
-                                                            topLeft: Radius
-                                                                .circular(10),
-                                                            topRight:
-                                                                Radius.circular(
-                                                                    10)),
+                                                      topLeft:
+                                                          Radius.circular(10),
+                                                      topRight:
+                                                          Radius.circular(10),
+                                                    ),
                                                     child: Image.network(
                                                       product.pictureUrl ?? '',
                                                       fit: BoxFit.cover,
@@ -249,10 +296,9 @@ class _HomePageState extends State<HomePage> {
                                                               padding:
                                                                   const EdgeInsets
                                                                       .symmetric(
-                                                                      horizontal:
-                                                                          8,
-                                                                      vertical:
-                                                                          4),
+                                                                horizontal: 8,
+                                                                vertical: 4,
+                                                              ),
                                                               decoration:
                                                                   BoxDecoration(
                                                                 color: AppColors
@@ -264,27 +310,28 @@ class _HomePageState extends State<HomePage> {
                                                               ),
                                                               child: Text(
                                                                 'Delete',
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        10,
-                                                                    color: AppColors
-                                                                        .background,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 10,
+                                                                  color: AppColors
+                                                                      .background,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
                                                               ),
                                                             ),
-                                                          )
+                                                          ),
                                                         ],
                                                       ),
                                                       const SizedBox(height: 5),
                                                       Text(
                                                         'Rp. ${product.price?.toStringAsFixed(0) ?? '0'}',
                                                         style: TextStyle(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                       ),
                                                       const SizedBox(
                                                           height: 28),
@@ -298,13 +345,15 @@ class _HomePageState extends State<HomePage> {
                                                               GestureDetector(
                                                             onTap: () {},
                                                             child: Container(
-                                                              padding: EdgeInsets.symmetric(
-                                                                  horizontal: MediaQuery.of(
-                                                                              context)
-                                                                          .size
-                                                                          .width /
-                                                                      9.1,
-                                                                  vertical: 6),
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                horizontal: MediaQuery.of(
+                                                                            context)
+                                                                        .size
+                                                                        .width /
+                                                                    9.1,
+                                                                vertical: 6,
+                                                              ),
                                                               decoration:
                                                                   BoxDecoration(
                                                                 color: AppColors
@@ -316,19 +365,20 @@ class _HomePageState extends State<HomePage> {
                                                               ),
                                                               child: Text(
                                                                 '+ Add to Cart',
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    color: AppColors
-                                                                        .background,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 14,
+                                                                  color: AppColors
+                                                                      .background,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
                                                               ),
                                                             ),
                                                           ),
                                                         ),
-                                                      )
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
