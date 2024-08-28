@@ -37,9 +37,7 @@ class CartItemBloc extends HydratedBloc<CartItemEvent, CartItemState> {
       final currentState = state;
       if (currentState is CartLoaded) {
         final updatedCartItems = currentState.cartItems
-            .where(
-              (item) => item.product.id != event.item.product.id,
-            )
+            .where((item) => item.product.id != event.item.product.id)
             .toList();
 
         emit(CartItemState.cartLoaded(updatedCartItems));
@@ -48,6 +46,33 @@ class CartItemBloc extends HydratedBloc<CartItemEvent, CartItemState> {
 
     on<_ClearCart>((event, emit) {
       emit(const CartItemState.cartLoaded([]));
+    });
+
+    // Tambahkan handler untuk increase dan decrease quantity
+    on<_IncreaseQuantity>((event, emit) {
+      final currentState = state;
+      if (currentState is CartLoaded) {
+        final updatedCartItems = currentState.cartItems.map((item) {
+          if (item.product.id == event.item.product.id) {
+            return item.copyWith(quantity: item.quantity + 1);
+          }
+          return item;
+        }).toList();
+        emit(CartItemState.cartLoaded(updatedCartItems));
+      }
+    });
+
+    on<_DecreaseQuantity>((event, emit) {
+      final currentState = state;
+      if (currentState is CartLoaded) {
+        final updatedCartItems = currentState.cartItems.map((item) {
+          if (item.product.id == event.item.product.id && item.quantity > 1) {
+            return item.copyWith(quantity: item.quantity - 1);
+          }
+          return item;
+        }).toList();
+        emit(CartItemState.cartLoaded(updatedCartItems));
+      }
     });
   }
 
