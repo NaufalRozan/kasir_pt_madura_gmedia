@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pos_gmedia_test/core/constant/colors.dart';
 
+import '../../../core/components/add_category_form.dart';
 import '../../auth/bloc/logout/logout_bloc.dart';
 import '../../auth/pages/login_page.dart';
 import '../bloc/get_category/get_category_bloc.dart';
 import '../bloc/get_product/get_product_bloc.dart';
 import '../../../../data/datasources/product_remote_datasource.dart';
+import '../bloc/add_category/add_category_bloc.dart';
+import '../../../../data/datasources/category_remote_datasource.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -19,8 +22,28 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Memicu pengambilan data kategori saat halaman diinisialisasi
     context.read<GetCategoryBloc>().add(GetCategoryEvent.getCategory());
+  }
+
+  void _showAddCategoryModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: BlocProvider(
+            create: (context) => AddCategoryBloc(CategoryRemoteDataSource()),
+            child: AddCategoryForm(),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -30,57 +53,68 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 30),
-          child: Column(
-            children: [
-              const Spacer(),
-              ListTile(
-                leading: const Icon(Icons.logout),
-                title: const Text('Logout'),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return Center(
-                        child: BlocConsumer<LogoutBloc, LogoutState>(
-                          listener: (context, state) {
-                            state.maybeMap(
-                              success: (_) {
-                                Navigator.of(context).pop(); // Tutup dialog
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                      builder: (context) => const LoginPage()),
-                                  (Route<dynamic> route) => false,
-                                );
-                              },
-                              error: (value) {
-                                Navigator.of(context).pop(); // Tutup dialog
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(value.error),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              },
-                              orElse: () {},
-                            );
-                          },
-                          builder: (context, state) {
-                            return state.maybeWhen(
-                              loading: () => const Center(
-                                  child: CircularProgressIndicator()),
-                              orElse: () => Container(),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
+          child: SafeArea(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.add_shopping_cart_rounded),
+                  title: const Text('Add Category'),
+                  onTap: () {
+                    Navigator.of(context).pop(); // Close the drawer first
+                    _showAddCategoryModal(context);
+                  },
+                ),
+                const Spacer(),
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text('Logout'),
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: BlocConsumer<LogoutBloc, LogoutState>(
+                            listener: (context, state) {
+                              state.maybeMap(
+                                success: (_) {
+                                  Navigator.of(context).pop(); // Tutup dialog
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginPage()),
+                                    (Route<dynamic> route) => false,
+                                  );
+                                },
+                                error: (value) {
+                                  Navigator.of(context).pop(); // Tutup dialog
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(value.error),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                },
+                                orElse: () {},
+                              );
+                            },
+                            builder: (context, state) {
+                              return state.maybeWhen(
+                                loading: () => const Center(
+                                    child: CircularProgressIndicator()),
+                                orElse: () => Container(),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
 
-                  context.read<LogoutBloc>().add(LogoutEvent.logout());
-                },
-              ),
-            ],
+                    context.read<LogoutBloc>().add(LogoutEvent.logout());
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
