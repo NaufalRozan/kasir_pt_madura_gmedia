@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pos_gmedia_test/data/datasources/product_remote_datasource.dart';
 import 'package:pos_gmedia_test/presentation/auth/pages/login_page.dart';
 import 'package:pos_gmedia_test/presentation/home/pages/home_page.dart';
@@ -10,12 +12,20 @@ import 'data/datasources/auth_remote_datasource.dart';
 import 'data/datasources/category_remote_datasource.dart';
 import 'presentation/auth/bloc/login/login_bloc.dart';
 import 'presentation/auth/bloc/logout/logout_bloc.dart';
+import 'presentation/home/bloc/cart_item/cart_item_bloc.dart';
 import 'presentation/home/bloc/delete_product/delete_product_bloc.dart';
 import 'presentation/home/bloc/get_category/get_category_bloc.dart';
 import 'presentation/home/bloc/get_product/get_product_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi storage untuk HydratedBloc
+  final storage = await HydratedStorage.build(
+    storageDirectory: await getApplicationDocumentsDirectory(),
+  );
+
+  HydratedBloc.storage = storage;
 
   // Periksa status login
   final authLocalDatasource = AuthLocalDatasource();
@@ -47,6 +57,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => DeleteProductBloc(ProductRemoteDataSource()),
+        ),
+        BlocProvider(
+          create: (context) => CartItemBloc(), // Tambahkan CartItemBloc
         ),
       ],
       child: MaterialApp(
