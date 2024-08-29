@@ -30,6 +30,8 @@ class _HomePageState extends State<HomePage> {
   final formatCurrency =
       NumberFormat.currency(locale: 'id_ID', symbol: 'Rp. ', decimalDigits: 0);
   String? selectedCategoryId;
+  bool isSearchActive = false;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -174,9 +176,36 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('MASPOS'),
-              Icon(Icons.search),
+            children: [
+              isSearchActive
+                  ? Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search...',
+                          border: InputBorder.none,
+                        ),
+                        autofocus: true,
+                        onSubmitted: (query) {
+                          // Implement search functionality
+                          setState(() {
+                            isSearchActive = false;
+                          });
+                        },
+                      ),
+                    )
+                  : Text('MASPOS'),
+              IconButton(
+                icon: Icon(isSearchActive ? Icons.close : Icons.search),
+                onPressed: () {
+                  setState(() {
+                    isSearchActive = !isSearchActive;
+                    if (!isSearchActive) {
+                      searchController.clear();
+                    }
+                  });
+                },
+              ),
             ],
           ),
         ),
@@ -488,7 +517,8 @@ class _HomePageState extends State<HomePage> {
                                                                 ),
                                                                 decoration:
                                                                     BoxDecoration(
-                                                                  color: AppColors.primary,
+                                                                  color: AppColors
+                                                                      .primary,
                                                                   borderRadius:
                                                                       BorderRadius
                                                                           .circular(
@@ -500,7 +530,8 @@ class _HomePageState extends State<HomePage> {
                                                                       TextStyle(
                                                                     fontSize:
                                                                         14,
-                                                                    color: AppColors.background,
+                                                                    color: AppColors
+                                                                        .background,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
