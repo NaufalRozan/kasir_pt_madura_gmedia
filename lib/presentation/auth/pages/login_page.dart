@@ -41,23 +41,27 @@ class _LoginPageState extends State<LoginPage> {
           Spacer(),
           Container(
             width: double.infinity,
-            height: MediaQuery.of(context).size.height / 2.5,
+            height: MediaQuery.of(context).size.height / 2.2,
             decoration: BoxDecoration(
               color: AppColors.background,
             ),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
+              padding: EdgeInsets.fromLTRB(
+                  MediaQuery.of(context).size.width / 20,
+                  MediaQuery.of(context).size.width / 15,
+                  MediaQuery.of(context).size.width / 20,
+                  MediaQuery.of(context).size.width / 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Login',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: MediaQuery.of(context).size.width / 15,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: MediaQuery.of(context).size.width / 24),
                   TextField(
                     controller: emailController,
                     decoration: InputDecoration(
@@ -67,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: MediaQuery.of(context).size.width / 24),
                   TextField(
                     controller: passwordController,
                     obscureText: !isShowPassword,
@@ -126,7 +130,9 @@ class _LoginPageState extends State<LoginPage> {
                                     );
                               },
                               child: Container(
-                                padding: EdgeInsets.symmetric(vertical: 16),
+                                padding: EdgeInsets.symmetric(
+                                    vertical:
+                                        MediaQuery.of(context).size.width / 24),
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: AppColors.primary,
@@ -136,7 +142,8 @@ class _LoginPageState extends State<LoginPage> {
                                   'Login',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize:
+                                        MediaQuery.of(context).size.width / 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
